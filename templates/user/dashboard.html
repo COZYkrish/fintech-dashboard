@@ -17,6 +17,12 @@
 <!-- ================= LOAN HISTORY ================= -->
 <div class="card">
     <h3>Loan History</h3>
+    <form action="{{ url_for('user.delete_last_loan') }}" method="post" style="margin-bottom:16px;">
+    <button class="btn-danger">
+        Delete Last Loan
+    </button>
+</form>
+
 
     {% if loans and loans|length > 0 %}
     <table>
@@ -28,18 +34,32 @@
             </tr>
         </thead>
         <tbody>
-            {% for loan in loans %}
-            <tr id="loan-{{ loan.id }}">
-                <td>₹{{ loan.amount }}</td>
-                <td>{{ loan.tenure }} months</td>
-                <td>
-                    <span class="status {{ loan.status }}">
-                        {{ loan.status }}
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+{% for loan in loans %}
+<tr>
+    <!-- Amount -->
+    <td>
+        ₹{{ "{:,.2f}".format(loan.amount) }}
+    </td>
+
+    <!-- Tenure -->
+    <td>
+        {% if loan.tenure > 0 %}
+            {{ loan.tenure }} months
+        {% else %}
+            <span style="color:#ef4444;">Invalid</span>
+        {% endif %}
+    </td>
+
+    <!-- Status -->
+    <td>
+        <span class="status {{ loan.status|lower }}">
+            {{ loan.status }}
+        </span>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
     </table>
     {% else %}
         <p style="color: var(--text-muted);">

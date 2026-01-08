@@ -19,26 +19,39 @@
             {% for loan in loans %}
             <tr id="loan-{{ loan.id }}">
                 <td>{{ loan.borrower }}</td>
-                <td>₹{{ loan.amount }}</td>
-                <td>{{ loan.tenure }} months</td>
+
+                <!-- ✅ FORMATTED AMOUNT -->
+                <td>₹{{ "{:,.2f}".format(loan.amount) }}</td>
+
+                <!-- ✅ SAFE TENURE DISPLAY -->
                 <td>
-                    <span class="status {{ loan.status }}">
+                    {% if loan.tenure > 0 %}
+                        {{ loan.tenure }} months
+                    {% else %}
+                        <span style="color:#ef4444;">Invalid</span>
+                    {% endif %}
+                </td>
+
+                <!-- ✅ LOWERCASE STATUS CLASS -->
+                <td>
+                    <span class="status {{ loan.status|lower }}">
                         {{ loan.status }}
                     </span>
                 </td>
-                <td>
-                    {% if loan.status == "Pending" %}
-                    <button class="btn approve"
-                            data-loan-id="{{ loan.id }}"
-                            onclick="updateStatus(this, 'Approved')">
-                        Approve
-                    </button>
 
-                    <button class="btn reject"
-                            data-loan-id="{{ loan.id }}"
-                            onclick="updateStatus(this, 'Rejected')">
-                        Reject
-                    </button>
+                <td>
+                    {% if loan.status == "Pending" and loan.amount > 0 and loan.tenure > 0 %}
+                        <button class="btn approve"
+                                data-loan-id="{{ loan.id }}"
+                                onclick="updateStatus(this, 'Approved')">
+                            Approve
+                        </button>
+
+                        <button class="btn reject"
+                                data-loan-id="{{ loan.id }}"
+                                onclick="updateStatus(this, 'Rejected')">
+                            Reject
+                        </button>
                     {% else %}
                         —
                     {% endif %}
@@ -63,12 +76,14 @@ function updateStatus(button, status) {
             const badge = row.querySelector(".status");
 
             badge.innerText = status;
-            badge.className = `status ${status}`;
+            badge.className = `status ${status.toLowerCase()}`;
 
             row.querySelector("td:last-child").innerHTML = "—";
 
             row.classList.add("pulse");
             setTimeout(() => row.classList.remove("pulse"), 600);
+        } else {
+            alert(data.message || "Action failed");
         }
     });
 }

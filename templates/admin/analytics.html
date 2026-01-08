@@ -64,22 +64,41 @@ fetch("/admin/analytics/chart-data")
         });
 
         new Chart(document.getElementById("monthlyChart"), {
-            type: "bar",
+            type: "line",
             data: {
                 labels: data.monthly.labels,
                 datasets: [{
-                    label: "Loans per Month",
-                    data: data.monthly.values,
-                    backgroundColor: "#4f46e5"
-                }]
+                label: "Monthly Loan Trends",
+                data: data.monthly.values,
+                borderColor: "#4f46e5",
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointRadius: 4
+            }]
+
+
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        x: {
+            title: {
+                display: true,
+                text: "Month"
             }
+        },
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: "Number of Loans"
+            }
+        }
+    }
+}
+
         });
     })
     .catch(err => console.error("Chart error:", err));
