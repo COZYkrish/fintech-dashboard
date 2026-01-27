@@ -4,11 +4,10 @@ import json
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this in production
+app.secret_key = 'your_secret_key_here'
 
 USERS_FILE = 'users.json'
 
-# User management helpers
 def load_users():
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, 'r') as f:
