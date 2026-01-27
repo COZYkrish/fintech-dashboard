@@ -63,19 +63,19 @@ fetch("/admin/analytics/chart-data")
             }
         });
 
-        // new Chart(document.getElementById("monthlyChart"), {
-        //     type: "line",
-        //     data: {
-        //         labels: data.monthly.labels,
-        //         datasets: [{
-        //         label: "Monthly Loan Trends",
-        //         data: data.monthly.values,
-        //         borderColor: "#4f46e5",
-        //         borderWidth: 3,
-        //         tension: 0.4,
-        //         fill: false,
-        //         pointRadius: 4
-        //     }]
+        new Chart(document.getElementById("monthlyChart"), {
+            type: "line",
+            data: {
+                labels: data.monthly.labels,
+                datasets: [{
+                label: "Monthly Loan Trends",
+                data: data.monthly.values,
+                borderColor: "#4f46e5",
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointRadius: 4
+            }]
 
 
             },
