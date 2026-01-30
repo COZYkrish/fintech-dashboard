@@ -7,15 +7,9 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # -------------------------
-    # Initialize extensions
-    # -------------------------
     db.init_app(app)
     login_manager.init_app(app)
 
-    # -------------------------
-    # User loader (REQUIRED)
-    # -------------------------
     from models.user import User
 
     @login_manager.user_loader
@@ -25,9 +19,6 @@ def create_app():
 
     login_manager.login_view = "auth.login"
 
-    # -------------------------
-    # Import blueprints
-    # -------------------------
     from routes.auth import auth_bp
     from routes.user import user_bp
     from routes.admin import admin_bp
@@ -41,16 +32,13 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(analytics_bp)
 
-    # -------------------------
-    # Root route
-    # -------------------------
-    @app.route("/")
-    def home():
-        if current_user.is_authenticated:
-            if current_user.role == "admin":
-                return redirect(url_for("admin.dashboard"))
-            return redirect(url_for("user.dashboard"))
-        return redirect(url_for("auth.login"))
+    # @app.route("/")
+    # def home():
+    #     if current_user.is_authenticated:
+    #         if current_user.role == "admin":
+    #             return redirect(url_for("admin.dashboard"))
+    #         return redirect(url_for("user.dashboard"))
+    #     return redirect(url_for("auth.login"))
 
     return app
 
