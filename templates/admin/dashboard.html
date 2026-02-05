@@ -71,20 +71,20 @@ function updateStatus(button, status) {
     })
     .then(res => res.json())
     .then(data => {
-        if (data.success) {
-            const row = document.getElementById(`loan-${loanId}`);
-            const badge = row.querySelector(".status");
+        // if (data.success) {
+        //     const row = document.getElementById(`loan-${loanId}`);
+        //     const badge = row.querySelector(".status");
 
-            badge.innerText = status;
-            badge.className = `status ${status.toLowerCase()}`;
+        //     badge.innerText = status;
+        //     badge.className = `status ${status.toLowerCase()}`;
 
-            row.querySelector("td:last-child").innerHTML = "—";
+        //     row.querySelector("td:last-child").innerHTML = "—";
 
-            row.classList.add("pulse");
-            setTimeout(() => row.classList.remove("pulse"), 600);
-        } else {
-            alert(data.message || "Action failed");
-        }
+        //     row.classList.add("pulse");
+        //     setTimeout(() => row.classList.remove("pulse"), 600);
+        // } else {
+        //     alert(data.message || "Action failed");
+        // }
     });
 }
 </script>
