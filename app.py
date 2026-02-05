@@ -27,10 +27,10 @@ def create_app():
     # -------------------------
     # Register blueprints
     # -------------------------
-    # app.register_blueprint(auth_bp)
-    # app.register_blueprint(user_bp)
-    # app.register_blueprint(admin_bp)
-    # app.register_blueprint(analytics_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(user_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(analytics_bp)
 
     # @app.route("/")
     # def home():
