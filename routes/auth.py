@@ -33,7 +33,7 @@ def register():
     return render_template("auth/register.html")
 
 
-# @auth_bp.route("/logout")
-# def logout():
-#     logout_user()
-#     return redirect("/auth/login")
+@auth_bp.route("/logout")
+def logout():
+    logout_user()
+    return redirect("/auth/login")
