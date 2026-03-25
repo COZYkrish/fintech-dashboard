@@ -24,9 +24,9 @@ def dashboard():
     pending = Loan.query.filter_by(status="Pending").count()
     rejected = Loan.query.filter_by(status="Rejected").count()
 
-    # total_amount = db.session.query(
-    #     func.coalesce(func.sum(Loan.amount), 0)
-    # ).scalar()
+    total_amount = db.session.query(
+        func.coalesce(func.sum(Loan.amount), 0)
+    ).scalar()
 
     return render_template(
         "admin/analytics.html",
