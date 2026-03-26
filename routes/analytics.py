@@ -33,9 +33,9 @@ def dashboard():
     #     total_loans=total_loans,
     #     approved=approved,
     #     pending=pending,
-    #     rejected=rejected,
-    #     total_amount=total_amount
-    # )
+        rejected=rejected,
+        total_amount=total_amount
+    )
 
 
 # -------------------------------
