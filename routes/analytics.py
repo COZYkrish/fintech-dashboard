@@ -28,11 +28,11 @@ def dashboard():
     #     func.coalesce(func.sum(Loan.amount), 0)
     # ).scalar()
 
-    # return render_template(
-    #     "admin/analytics.html",
-    #     total_loans=total_loans,
-    #     approved=approved,
-    #     pending=pending,
+    return render_template(
+        "admin/analytics.html",
+        total_loans=total_loans,
+        approved=approved,
+        pending=pending,
         rejected=rejected,
         total_amount=total_amount
     )
