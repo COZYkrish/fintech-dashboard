@@ -17,6 +17,6 @@ def load_users():
                 return {}
     return {}
 
-# def save_users(users):
-#     with open(USERS_FILE, 'w') as f:
-#         json.dump(users, f)
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f)
