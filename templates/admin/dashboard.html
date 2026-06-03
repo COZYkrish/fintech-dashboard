@@ -1,91 +1,210 @@
 {% extends "base_dashboard.html" %}
 
 {% block content %}
-<h1>Loan Applications</h1>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+    <h1 style="margin:0;">Loan Applications</h1>
+    <span style="font-size:0.85rem; color:var(--text-muted);">
+        {{ loans|length }} total application{{ 's' if loans|length != 1 else '' }}
+    </span>
+</div>
 
 <div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Amount</th>
-                <th>Tenure</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Borrower</th>
+                    <th>Purpose</th>
+                    <th>Amount</th>
+                    <th>Tenure</th>
+                    <th>EMI / mo</th>
+                    <th>Risk Score</th>
+                    <th>Status</th>
+                    <th style="min-width:220px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
             {% for loan in loans %}
+            {% set user = loan.user %}
+            {% set score = user.credit_score if user else 700 %}
+
+            {# Determine risk tier #}
+            {% if score >= 720 %}
+                {% set risk_label = "Low Risk" %}
+                {% set risk_color = "var(--success)" %}
+                {% set risk_bg    = "#D1FAE5" %}
+            {% elif score >= 600 %}
+                {% set risk_label = "Moderate" %}
+                {% set risk_color = "var(--warning)" %}
+                {% set risk_bg    = "#FEF3C7" %}
+            {% else %}
+                {% set risk_label = "High Risk" %}
+                {% set risk_color = "var(--danger)" %}
+                {% set risk_bg    = "#FEE2E2" %}
+            {% endif %}
+
             <tr id="loan-{{ loan.id }}">
-                <td>{{ loan.borrower }}</td>
-
-                <!-- ✅ FORMATTED AMOUNT -->
-                <td>₹{{ "{:,.2f}".format(loan.amount) }}</td>
-
-                <!-- ✅ SAFE TENURE DISPLAY -->
+                <!-- Borrower + income/collateral tooltip -->
                 <td>
-                    {% if loan.tenure > 0 %}
-                        {{ loan.tenure }} months
-                    {% else %}
-                        <span style="color:#ef4444;">Invalid</span>
+                    <strong>{{ loan.borrower }}</strong>
+                    {% if loan.income and loan.income > 0 %}
+                    <br><span style="font-size:0.75rem; color:var(--text-muted);">
+                        Income: ₹{{ "{:,.0f}".format(loan.income) }}/mo
+                    </span>
+                    {% endif %}
+                    {% if loan.collateral %}
+                    <br><span style="font-size:0.72rem; color:var(--text-muted);" title="{{ loan.collateral }}">
+                        Collateral: {{ loan.collateral[:28] }}{% if loan.collateral|length > 28 %}…{% endif %}
+                    </span>
                     {% endif %}
                 </td>
 
-                <!-- ✅ LOWERCASE STATUS CLASS -->
+                <td>{{ loan.purpose or 'Personal' }}</td>
+
+                <td>₹{{ "{:,.0f}".format(loan.amount) }}</td>
+
                 <td>
-                    <span class="status {{ loan.status|lower }}">
-                        {{ loan.status }}
+                    {% if loan.tenure > 0 %}
+                        {{ loan.tenure }} mo
+                        <br><span style="font-size:0.72rem; color:var(--text-muted);">{{ loan.interest_rate }}% p.a.</span>
+                    {% else %}
+                        <span style="color:var(--danger);">Invalid</span>
+                    {% endif %}
+                </td>
+
+                <td>{% if loan.emi %}₹{{ "{:,.2f}".format(loan.emi) }}{% else %}—{% endif %}</td>
+
+                <!-- Credit Score + Risk Badge -->
+                <td>
+                    <span id="score-{{ loan.id }}" style="
+                        display:inline-flex; align-items:center; gap:5px;
+                        font-size:0.85rem; font-weight:600; color:{{ risk_color }};
+                    ">
+                        {{ score }}
+                    </span>
+                    <br>
+                    <span style="
+                        display:inline-block; margin-top:3px;
+                        background:{{ risk_bg }}; color:{{ risk_color }};
+                        font-size:0.65rem; font-weight:600; letter-spacing:0.08em;
+                        text-transform:uppercase; padding:2px 8px; border-radius:99px;
+                    ">
+                        {{ risk_label }}
                     </span>
                 </td>
 
                 <td>
-                    {% if loan.status == "Pending" and loan.amount > 0 and loan.tenure > 0 %}
+                    <span class="status {{ loan.status | lower | replace(' ', '-') }}"
+                          id="status-{{ loan.id }}">
+                        {{ loan.status }}
+                    </span>
+                    {% if loan.remarks %}
+                    <br><span style="font-size:0.72rem; color:var(--text-muted);" id="remarks-display-{{ loan.id }}">
+                        "{{ loan.remarks[:50] }}{% if loan.remarks|length > 50 %}…{% endif %}"
+                    </span>
+                    {% endif %}
+                </td>
+
+                <!-- Action Cell -->
+                <td class="action-cell" id="action-{{ loan.id }}">
+                {% if loan.status == "Pending" and loan.amount > 0 and loan.tenure > 0 %}
+                    <!-- Remarks input -->
+                    <input type="text"
+                           id="remarks-{{ loan.id }}"
+                           placeholder="Add remarks (optional)"
+                           style="width:100%; padding:0.4rem 0.6rem; border:1px solid #E2E8F0;
+                                  border-radius:6px; font-size:0.8rem; margin-bottom:0.5rem;
+                                  font-family:inherit; outline:none;">
+                    <div style="display:flex; gap:0.5rem;">
                         <button class="btn approve"
                                 data-loan-id="{{ loan.id }}"
                                 onclick="updateStatus(this, 'Approved')">
                             Approve
                         </button>
-
                         <button class="btn reject"
                                 data-loan-id="{{ loan.id }}"
                                 onclick="updateStatus(this, 'Rejected')">
                             Reject
                         </button>
-                    {% else %}
-                        —
-                    {% endif %}
+                    </div>
+                {% else %}
+                    <span style="color:var(--text-muted);">—</span>
+                {% endif %}
                 </td>
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
+
+            {% if not loans %}
+            <tr>
+                <td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                    No applications found.
+                </td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
 function updateStatus(button, status) {
-    const loanId = button.dataset.loanId;
+    const loanId  = button.dataset.loanId;
+    const remarks = (document.getElementById(`remarks-${loanId}`) || {}).value || '';
+
+    // Disable both buttons
+    const cell = document.getElementById(`action-${loanId}`);
+    cell.querySelectorAll('button').forEach(b => b.disabled = true);
 
     fetch(`/admin/update-status/${loanId}/${status}`, {
-        method: "POST"
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ remarks })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.success) {
-            const row = document.getElementById(`loan-${loanId}`);
-            const badge = row.querySelector(".status");
-
-            badge.innerText = status;
-            badge.className = `status ${status.toLowerCase()}`;
-
-            row.querySelector("td:last-child").innerHTML = "—";
-
-            row.classList.add("pulse");
-            setTimeout(() => row.classList.remove("pulse"), 600);
-        } else {
-            alert(data.message || "Action failed");
+        if (!data.success) {
+            alert(data.error || 'Action failed.');
+            cell.querySelectorAll('button').forEach(b => b.disabled = false);
+            return;
         }
+
+        // Update status badge
+        const badge = document.getElementById(`status-${loanId}`);
+        if (badge) {
+            badge.textContent = status;
+            badge.className   = `status ${status.toLowerCase()}`;
+        }
+
+        // Update credit score display for this row
+        if (data.credit_score !== null) {
+            const scoreEl = document.getElementById(`score-${loanId}`);
+            if (scoreEl) scoreEl.textContent = data.credit_score;
+        }
+
+        // Replace action cell
+        cell.innerHTML = remarks
+            ? `<span style="color:var(--text-muted); font-size:0.8rem;">"${remarks.substring(0, 60)}"</span>`
+            : `<span style="color:var(--text-muted);">—</span>`;
+
+        // Flash row
+        const row = document.getElementById(`loan-${loanId}`);
+        if (row) {
+            row.classList.add('pulse');
+            setTimeout(() => row.classList.remove('pulse'), 1000);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('An error occurred. Please try again.');
+        cell.querySelectorAll('button').forEach(b => b.disabled = false);
     });
 }
 </script>
+
+<style>
+/* Paid-off badge */
+.status.paid-off { background:#D1FAE5; color:#059669; }
+</style>
+
 {% endblock %}

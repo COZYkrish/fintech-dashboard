@@ -1,90 +1,339 @@
 {% extends "base_dashboard.html" %}
 
 {% block content %}
-<h1>My Loans</h1>
 
-<!-- ================= APPLY LOAN ================= -->
+<!-- ═══════════════════════════════════════════════════════════════
+     HEADER ROW
+════════════════════════════════════════════════════════════════ -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+    <div>
+        <h1 style="margin:0;">My Loans</h1>
+        <p style="color:var(--text-muted); font-size:0.875rem; margin-top:0.25rem;">
+            Credit Score:
+            <strong id="credit-score-display" style="
+                color:{% if current_user.credit_score >= 720 %}var(--success){% elif current_user.credit_score >= 600 %}var(--warning){% else %}var(--danger){% endif %};
+            ">{{ current_user.credit_score }}</strong>
+            &nbsp;/&nbsp;850
+        </p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     APPLY FOR LOAN CARD
+════════════════════════════════════════════════════════════════ -->
 <div class="card">
-    <h3>Apply for Loan</h3>
+    <h3>Apply for a Loan</h3>
+    <form method="post" action="/user/apply" id="loan-apply-form">
 
-    <form method="post" action="/user/apply" class="loan-form">
-        <input type="number" name="amount" placeholder="Amount ₹" required>
-        <input type="number" name="tenure" placeholder="Tenure (months)" required>
-        <button type="submit">Apply Loan</button>
+        <!-- Row 1: Amount + Tenure -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div>
+                <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.35rem;">
+                    Loan Amount (₹)
+                </label>
+                <input type="number" name="amount" id="inp-amount"
+                       placeholder="e.g. 500000" min="1" max="10000000" required
+                       style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0;
+                              border-radius:8px; background:#F8FAFC; font-family:inherit; font-size:1rem; outline:none;">
+            </div>
+            <div>
+                <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.35rem;">
+                    Tenure (months)
+                </label>
+                <input type="number" name="tenure" id="inp-tenure"
+                       placeholder="e.g. 24" min="1" max="60" required
+                       style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0;
+                              border-radius:8px; background:#F8FAFC; font-family:inherit; font-size:1rem; outline:none;">
+            </div>
+        </div>
+
+        <!-- Row 2: Purpose + Income -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div>
+                <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.35rem;">
+                    Loan Purpose
+                </label>
+                <select name="purpose" id="inp-purpose"
+                        style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0;
+                               border-radius:8px; background:#F8FAFC; font-family:inherit; font-size:1rem; outline:none; cursor:pointer;">
+                    <option value="Personal">Personal</option>
+                    <option value="Home">Home</option>
+                    <option value="Education">Education</option>
+                    <option value="Business">Business</option>
+                    <option value="Vehicle">Vehicle</option>
+                    <option value="Medical">Medical</option>
+                </select>
+            </div>
+            <div>
+                <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.35rem;">
+                    Monthly Income (₹) <span style="opacity:0.5;">(optional)</span>
+                </label>
+                <input type="number" name="income" id="inp-income"
+                       placeholder="e.g. 80000" min="0"
+                       style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0;
+                              border-radius:8px; background:#F8FAFC; font-family:inherit; font-size:1rem; outline:none;">
+            </div>
+        </div>
+
+        <!-- Row 3: Collateral (full width) -->
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.35rem;">
+                Collateral Description <span style="opacity:0.5;">(optional)</span>
+            </label>
+            <input type="text" name="collateral"
+                   placeholder="e.g. Property at 12 Main Street"
+                   style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0;
+                          border-radius:8px; background:#F8FAFC; font-family:inherit; font-size:1rem; outline:none;">
+        </div>
+
+        <!-- ── Live EMI Preview Panel ── -->
+        <div id="emi-preview" style="
+            display:none;
+            background:linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 100%);
+            border-radius:12px;
+            padding:1.25rem 1.5rem;
+            margin-bottom:1.25rem;
+            color:#F8F5F2;
+        ">
+            <p style="font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:#888; margin-bottom:0.9rem;">
+                Live EMI Preview
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; text-align:center;">
+                <div>
+                    <p style="font-size:0.7rem; color:#888; margin-bottom:0.25rem;">Interest Rate</p>
+                    <p id="preview-rate" style="font-size:1.3rem; font-weight:600;">—</p>
+                </div>
+                <div>
+                    <p style="font-size:0.7rem; color:#888; margin-bottom:0.25rem;">Monthly EMI</p>
+                    <p id="preview-emi" style="font-size:1.3rem; font-weight:600; color:#D4AF37;">—</p>
+                </div>
+                <div>
+                    <p style="font-size:0.7rem; color:#888; margin-bottom:0.25rem;">Total Interest</p>
+                    <p id="preview-interest" style="font-size:1.3rem; font-weight:600; color:#F87171;">—</p>
+                </div>
+                <div>
+                    <p style="font-size:0.7rem; color:#888; margin-bottom:0.25rem;">Total Repayable</p>
+                    <p id="preview-total" style="font-size:1.3rem; font-weight:600;">—</p>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:0.85rem 2rem; font-size:1rem;">
+            Submit Application
+        </button>
     </form>
 </div>
 
-<!-- ================= LOAN HISTORY ================= -->
+<!-- ═══════════════════════════════════════════════════════════════
+     LOAN HISTORY TABLE
+════════════════════════════════════════════════════════════════ -->
 <div class="card">
-    <h3>Loan History</h3>
-    <form action="{{ url_for('user.delete_last_loan') }}" method="post" style="margin-bottom:16px;">
-    <button class="btn-danger">
-        Delete Last Loan
-    </button>
-</form>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h3 style="margin:0;">Loan History</h3>
+        <form action="{{ url_for('user.delete_last_loan') }}" method="post">
+            <button type="submit" class="btn btn-danger"
+                    style="font-size:0.875rem; padding:0.5rem 1rem;">
+                Delete Last Application
+            </button>
+        </form>
+    </div>
 
-
-    {% if loans and loans|length > 0 %}
-    <table>
-        <thead>
-            <tr>
-                <th>Amount</th>
-                <th>Tenure</th>
-                <th>Status</th>
+    {% if loans %}
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Purpose</th>
+                    <th>Amount</th>
+                    <th>Tenure</th>
+                    <th>Rate</th>
+                    <th>EMI / mo</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Repayment</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for loan in loans %}
+            {% set total_repay = loan.emi * loan.tenure if loan.emi else 0 %}
+            {% set pct_paid    = ((total_repay - loan.remaining_balance) / total_repay * 100) | round(1) if total_repay > 0 else 0 %}
+            <tr id="loan-{{ loan.id }}">
+                <td>{{ loan.purpose or 'Personal' }}</td>
+                <td>₹{{ "{:,.0f}".format(loan.amount) }}</td>
+                <td>{{ loan.tenure }} mo</td>
+                <td>{{ loan.interest_rate or '—' }}%</td>
+                <td>{% if loan.emi %}₹{{ "{:,.2f}".format(loan.emi) }}{% else %}—{% endif %}</td>
+                <td>
+                    <span class="status {{ loan.status | lower | replace(' ', '-') }}"
+                          id="status-{{ loan.id }}">
+                        {{ loan.status }}
+                    </span>
+                </td>
+                <td style="font-size:0.82rem; color:var(--text-muted); max-width:180px;">
+                    <span id="remarks-{{ loan.id }}">{{ loan.remarks or '—' }}</span>
+                </td>
+                <td style="min-width:180px;">
+                {% if loan.status == "Approved" %}
+                    <!-- Progress bar -->
+                    <div style="margin-bottom:0.45rem;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-bottom:3px;">
+                            <span id="pct-label-{{ loan.id }}">{{ pct_paid }}% paid</span>
+                            <span id="bal-label-{{ loan.id }}">₹{{ "{:,.2f}".format(loan.remaining_balance) }} left</span>
+                        </div>
+                        <div style="background:#F1F5F9; border-radius:99px; height:6px; overflow:hidden;">
+                            <div id="progress-{{ loan.id }}"
+                                 style="height:100%; border-radius:99px; background:var(--success);
+                                        width:{{ pct_paid }}%; transition:width 0.6s ease;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn approve"
+                            style="font-size:0.75rem; padding:0.35rem 0.85rem;"
+                            onclick="makeRepayment({{ loan.id }}, this)">
+                        Pay EMI
+                    </button>
+                {% elif loan.status == "Paid Off" %}
+                    <span style="color:var(--success); font-size:0.82rem; font-weight:600;">
+                        Fully Paid Off ✓
+                    </span>
+                {% else %}
+                    <span style="color:var(--text-muted); font-size:0.82rem;">—</span>
+                {% endif %}
+                </td>
             </tr>
-        </thead>
-        <tbody>
-{% for loan in loans %}
-<tr>
-    <!-- Amount -->
-    <td>
-        ₹{{ "{:,.2f}".format(loan.amount) }}
-    </td>
-
-    <!-- Tenure -->
-    <td>
-        {% if loan.tenure > 0 %}
-            {{ loan.tenure }} months
-        {% else %}
-            <span style="color:#ef4444;">Invalid</span>
-        {% endif %}
-    </td>
-
-    <!-- Status -->
-    <td>
-        <span class="status {{ loan.status|lower }}">
-            {{ loan.status }}
-        </span>
-    </td>
-</tr>
-{% endfor %}
-</tbody>
-
-    </table>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-        <p style="color: var(--text-muted);">
-            No loan history found.
-        </p>
+    <p style="color:var(--text-muted); text-align:center; padding:2rem 0;">
+        No loan history found. Apply above to get started.
+    </p>
     {% endif %}
 </div>
 
-<!-- ================= AUTO REFRESH ================= -->
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════ -->
 <script>
+// ── Live EMI Calculator ────────────────────────────────────────
+const fmtINR = (n) => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function getRate(tenure) {
+    if (tenure <= 12) return 7.5;
+    if (tenure <= 36) return 8.5;
+    return 9.5;
+}
+
+function calcEMI(P, annualRate, n) {
+    const r = annualRate / 12 / 100;
+    if (r === 0) return P / n;
+    return P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+}
+
+function updatePreview() {
+    const P = parseFloat(document.getElementById('inp-amount').value);
+    const n = parseInt(document.getElementById('inp-tenure').value);
+    const preview = document.getElementById('emi-preview');
+
+    if (!P || !n || P <= 0 || n <= 0) {
+        preview.style.display = 'none';
+        return;
+    }
+
+    const rate     = getRate(n);
+    const emi      = calcEMI(P, rate, n);
+    const total    = emi * n;
+    const interest = total - P;
+
+    document.getElementById('preview-rate').textContent     = rate + '% p.a.';
+    document.getElementById('preview-emi').textContent      = fmtINR(emi);
+    document.getElementById('preview-interest').textContent = fmtINR(interest);
+    document.getElementById('preview-total').textContent    = fmtINR(total);
+    preview.style.display = 'block';
+}
+
+document.getElementById('inp-amount').addEventListener('input', updatePreview);
+document.getElementById('inp-tenure').addEventListener('input', updatePreview);
+
+
+// ── Make EMI Repayment ─────────────────────────────────────────
+function makeRepayment(loanId, btn) {
+    btn.disabled    = true;
+    btn.textContent = 'Processing…';
+
+    fetch(`/user/repay/${loanId}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.error || 'Payment failed.');
+                btn.disabled    = false;
+                btn.textContent = 'Pay EMI';
+                return;
+            }
+
+            // Update progress bar
+            const pctEl  = document.getElementById(`pct-label-${loanId}`);
+            const balEl  = document.getElementById(`bal-label-${loanId}`);
+            const barEl  = document.getElementById(`progress-${loanId}`);
+            const statEl = document.getElementById(`status-${loanId}`);
+
+            if (pctEl)  pctEl.textContent = data.pct_paid + '% paid';
+            if (balEl)  balEl.textContent = '₹' + data.remaining_balance.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' left';
+            if (barEl)  barEl.style.width = data.pct_paid + '%';
+
+            // Update credit score display
+            const scoreEl = document.getElementById('credit-score-display');
+            if (scoreEl && data.credit_score) {
+                scoreEl.textContent = data.credit_score;
+            }
+
+            if (data.status === 'Paid Off') {
+                if (statEl) { statEl.textContent = 'Paid Off'; statEl.className = 'status paid-off'; }
+                const cell = btn.closest('td');
+                if (cell) cell.innerHTML = '<span style="color:var(--success);font-size:0.82rem;font-weight:600;">Fully Paid Off ✓</span>';
+            } else {
+                btn.disabled    = false;
+                btn.textContent = 'Pay EMI';
+            }
+        })
+        .catch(() => {
+            alert('An error occurred. Please try again.');
+            btn.disabled    = false;
+            btn.textContent = 'Pay EMI';
+        });
+}
+
+
+// ── Live Status Polling (every 5 s) ───────────────────────────
 function refreshLoans() {
-    fetch("/user/loans")
+    fetch('/user/loans')
         .then(res => res.json())
         .then(loans => {
             loans.forEach(loan => {
-                const row = document.getElementById(`loan-${loan.id}`);
-                if (row) {
-                    const badge = row.querySelector(".status");
+                const row    = document.getElementById(`loan-${loan.id}`);
+                if (!row) return;
+                const badge  = document.getElementById(`status-${loan.id}`);
+                const remEl  = document.getElementById(`remarks-${loan.id}`);
+
+                if (badge && badge.textContent.trim() !== loan.status) {
                     badge.textContent = loan.status;
-                    badge.className = `status ${loan.status}`;
+                    badge.className   = `status ${loan.status.toLowerCase().replace(' ', '-')}`;
+                    row.classList.add('pulse');
+                    setTimeout(() => row.classList.remove('pulse'), 1000);
                 }
+
+                if (remEl && loan.remarks) remEl.textContent = loan.remarks;
             });
         });
 }
 
 setInterval(refreshLoans, 5000);
 </script>
+
+<style>
+/* Paid-off badge */
+.status.paid-off { background:#D1FAE5; color:#059669; }
+</style>
+
 {% endblock %}

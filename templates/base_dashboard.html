@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>FinDash</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Core Styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
@@ -20,18 +18,15 @@
 
         <nav>
             <ul>
-                <li><a href="/user/dashboard">Loans</a></li>
-                <li><a href="/admin/analytics">Analytics</a></li>
-                <li><a href="/auth/logout">Logout</a></li>
+                {% if current_user.role == 'admin' %}
+                    <li><a href="/admin/dashboard">Loan Applications</a></li>
+                    <li><a href="/admin/analytics">Analytics</a></li>
+                {% else %}
+                    <li><a href="/user/dashboard">My Loans</a></li>
+                {% endif %}
+                <li style="margin-top: 2rem;"><a href="/auth/logout">Logout</a></li>
             </ul>
         </nav>
-
-        <!-- Theme Toggle -->
-        <div class="theme-toggle" id="themeToggle">
-            <span class="icon">☀</span>
-            <span class="icon">🌙</span>
-            <div class="toggle-ball"></div>
-        </div>
     </aside>
 
     <!-- MAIN CONTENT -->
@@ -41,6 +36,5 @@
 
 </div>
 <div id="toast"></div>
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

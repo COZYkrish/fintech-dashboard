@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 from flask_login import current_user
 from config import Config
 from extensions import db, login_manager
@@ -17,7 +17,7 @@ def create_app():
         return db.session.get(User, int(user_id))
 
 
-    login_manager.login_view = "auth.login"
+    setattr(login_manager, "login_view", "auth.login")
 
     from routes.auth import auth_bp
     from routes.user import user_bp
@@ -36,7 +36,7 @@ def create_app():
             if current_user.role == "admin":
                 return redirect(url_for("admin.dashboard"))
             return redirect(url_for("user.dashboard"))
-        return redirect(url_for("auth.login"))
+        return render_template("index.html")
 
     return app
 

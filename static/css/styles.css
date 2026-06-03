@@ -1,0 +1,520 @@
+/* ==========================================================================
+   FinDash - Premium Cream and Black Theme
+   Typography: Outfit (Google Fonts)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Cream and Black Palette */
+    --bg-cream: #F8F5F2; /* Soft rich cream */
+    --bg-cream-alt: #EBE6E0; /* Slightly darker cream for depth */
+    --bg-black: #0F0F0F; /* Deep black */
+    --bg-black-alt: #1A1A1A; /* Slightly lighter black */
+
+    --text-dark: #121212;
+    --text-light: #F8F5F2;
+    --text-muted: #888888;
+    
+    --accent: #D4AF37; /* Optional gold accent for premium feel, minimal use */
+    
+    --success: #10B981;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+
+    --font-primary: 'Outfit', sans-serif;
+    
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+    --shadow-glass-dark: 0 8px 32px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   Global Reset & Base
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.hero-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 1.1;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 300;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: var(--font-primary);
+}
+
+.btn-primary {
+    background: var(--bg-black);
+    color: var(--text-light);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: #000;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #DC2626;
+    transform: translateY(-2px);
+}
+
+.btn.approve {
+    background: var(--success);
+    color: white;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn.reject {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+.btn.approve:hover, .btn.reject:hover {
+    transform: scale(1.05);
+}
+
+
+/* ==========================================================================
+   Landing Page & Storyscroll (3D Effects)
+   ========================================================================== */
+.landing-container {
+    width: 100%;
+}
+
+.section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section {
+    background-color: var(--bg-cream);
+    text-align: center;
+    perspective: 1000px;
+}
+
+.hero-content {
+    transform-style: preserve-3d;
+    animation: fadeUp 1s ease-out forwards;
+}
+
+.story-section {
+    background-color: var(--bg-black);
+    color: var(--text-light);
+    perspective: 1000px;
+}
+
+.story-section.cream {
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
+}
+
+.story-content {
+    max-width: 1200px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(50px) rotateX(-10deg);
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.story-content.visible {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+}
+
+.story-text h2 {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.story-text p {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+}
+
+.story-visual {
+    position: relative;
+    height: 400px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: var(--shadow-glass-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.story-section.cream .story-visual {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-glass);
+}
+
+.floating-element {
+    width: 200px;
+    height: 120px;
+    background: var(--bg-cream-alt);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    animation: float 6s ease-in-out infinite;
+}
+.story-section.cream .floating-element {
+    background: var(--bg-black-alt);
+}
+
+@media (max-width: 768px) {
+    .story-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+}
+
+/* ==========================================================================
+   Auth Pages (Login/Register)
+   ========================================================================== */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-black);
+    padding: 2rem;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    color: var(--text-light);
+}
+
+.auth-card h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.auth-form .input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-light);
+    font-size: 1rem;
+    font-family: var(--font-primary);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.auth-form input:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.auth-form button {
+    width: 100%;
+    margin-top: 1rem;
+}
+.auth-links {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+.auth-links a {
+    color: var(--text-light);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Dashboard Layout
+   ========================================================================== */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--bg-cream);
+}
+
+.sidebar {
+    width: 280px;
+    background: var(--bg-black);
+    color: var(--text-light);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+}
+
+.sidebar h2 {
+    font-size: 1.75rem;
+    margin-bottom: 3rem;
+    letter-spacing: 2px;
+}
+
+.sidebar nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar nav a {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.sidebar nav a:hover,
+.sidebar nav a.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 3rem 4rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        padding: 1.5rem;
+    }
+    .main-content {
+        margin-left: 0;
+        padding: 2rem;
+    }
+}
+
+/* ==========================================================================
+   Dashboard Components (Cards, Forms, Tables)
+   ========================================================================== */
+.card {
+    background: #FFFFFF;
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    box-shadow: var(--shadow-glass);
+    margin-bottom: 2rem;
+}
+
+.card h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.loan-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+}
+
+.loan-form input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: var(--radius-sm);
+    background: #F8FAFC;
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.loan-form input:focus {
+    border-color: var(--bg-black);
+}
+
+@media (max-width: 768px) {
+    .loan-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+th {
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+td {
+    font-weight: 500;
+}
+
+/* Status Badges */
+.status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.status.pending { background: #FEF3C7; color: #D97706; }
+.status.approved { background: #D1FAE5; color: #059669; }
+.status.rejected { background: #FEE2E2; color: #DC2626; }
+
+/* Pulse Animation for Row Updates */
+@keyframes rowPulse {
+    0% { background-color: rgba(16, 185, 129, 0.1); }
+    50% { background-color: rgba(16, 185, 129, 0.3); }
+    100% { background-color: transparent; }
+}
+
+tr.pulse {
+    animation: rowPulse 1s ease-out;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Toast (Retained from base) */
+#toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-black);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 9999;
+}
+#toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
