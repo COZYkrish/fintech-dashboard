@@ -50,7 +50,7 @@
                     <strong>{{ loan.borrower }}</strong>
                     {% if loan.income and loan.income > 0 %}
                     <br><span style="font-size:0.75rem; color:var(--text-muted);">
-                        Income: ₹{{ "{:,.0f}".format(loan.income) }}/mo
+                        Income: ₹{{ "{:,.0f}".format(loan.income or 0) }}/mo
                     </span>
                     {% endif %}
                     {% if loan.collateral %}
@@ -62,7 +62,7 @@
 
                 <td>{{ loan.purpose or 'Personal' }}</td>
 
-                <td>₹{{ "{:,.0f}".format(loan.amount) }}</td>
+                <td>₹{{ "{:,.0f}".format(loan.amount or 0) }}</td>
 
                 <td>
                     {% if loan.tenure > 0 %}
@@ -73,7 +73,7 @@
                     {% endif %}
                 </td>
 
-                <td>{% if loan.emi %}₹{{ "{:,.2f}".format(loan.emi) }}{% else %}—{% endif %}</td>
+                <td>{% if loan.emi %}₹{{ "{:,.2f}".format(loan.emi or 0) }}{% else %}—{% endif %}</td>
 
                 <!-- Credit Score + Risk Badge -->
                 <td>
@@ -84,7 +84,7 @@
                         {{ score }}
                     </span>
                     <br>
-                    <span style="
+                    <span id="risk-badge-{{ loan.id }}" style="
                         display:inline-block; margin-top:3px;
                         background:{{ risk_bg }}; color:{{ risk_color }};
                         font-size:0.65rem; font-weight:600; letter-spacing:0.08em;
@@ -99,11 +99,13 @@
                           id="status-{{ loan.id }}">
                         {{ loan.status }}
                     </span>
-                    {% if loan.remarks %}
-                    <br><span style="font-size:0.72rem; color:var(--text-muted);" id="remarks-display-{{ loan.id }}">
-                        "{{ loan.remarks[:50] }}{% if loan.remarks|length > 50 %}…{% endif %}"
-                    </span>
-                    {% endif %}
+                    <div id="remarks-container-{{ loan.id }}" style="margin-top:4px;">
+                        {% if loan.remarks %}
+                        <span style="font-size:0.72rem; color:var(--text-muted);" id="remarks-display-{{ loan.id }}">
+                            "{{ loan.remarks[:50] }}{% if loan.remarks|length > 50 %}…{% endif %}"
+                        </span>
+                        {% endif %}
+                    </div>
                 </td>
 
                 <!-- Action Cell -->
@@ -176,16 +178,48 @@ function updateStatus(button, status) {
             badge.className   = `status ${status.toLowerCase()}`;
         }
 
-        // Update credit score display for this row
+        // Update credit score display and risk tier dynamically
         if (data.credit_score !== null) {
             const scoreEl = document.getElementById(`score-${loanId}`);
-            if (scoreEl) scoreEl.textContent = data.credit_score;
+            const riskEl = document.getElementById(`risk-badge-${loanId}`);
+            if (scoreEl) {
+                scoreEl.textContent = data.credit_score;
+                
+                let riskLabel = "";
+                let riskColor = "";
+                let riskBg = "";
+                
+                if (data.credit_score >= 720) {
+                    riskLabel = "Low Risk";
+                    riskColor = "var(--success)";
+                    riskBg    = "#D1FAE5";
+                } else if (data.credit_score >= 600) {
+                    riskLabel = "Moderate";
+                    riskColor = "var(--warning)";
+                    riskBg    = "#FEF3C7";
+                } else {
+                    riskLabel = "High Risk";
+                    riskColor = "var(--danger)";
+                    riskBg    = "#FEE2E2";
+                }
+                
+                scoreEl.style.color = riskColor;
+                if (riskEl) {
+                    riskEl.textContent = riskLabel;
+                    riskEl.style.background = riskBg;
+                    riskEl.style.color = riskColor;
+                }
+            }
+        }
+
+        // Update remarks container in the status column
+        const remarksContainer = document.getElementById(`remarks-container-${loanId}`);
+        if (remarksContainer && remarks) {
+            remarksContainer.innerHTML = `<span style="font-size:0.72rem; color:var(--text-muted);" id="remarks-display-${loanId}">"${remarks}"</span>`;
         }
 
         // Replace action cell
-        cell.innerHTML = remarks
-            ? `<span style="color:var(--text-muted); font-size:0.8rem;">"${remarks.substring(0, 60)}"</span>`
-            : `<span style="color:var(--text-muted);">—</span>`;
+        cell.innerHTML = `<span style="color:var(--text-muted);">—</span>`;
 
         // Flash row
         const row = document.getElementById(`loan-${loanId}`);
